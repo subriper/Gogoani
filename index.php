@@ -35,7 +35,7 @@
 
 
 
-    <link rel="stylesheet" type="text/css" href="<?=$base_url?>/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="/css/style.css" />
 
     <script type="text/javascript" src="<?=$base_url?>/js/libraries/jquery.js"></script>
     <script>
