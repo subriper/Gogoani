@@ -1,16 +1,10 @@
 {
+  "version": 2,
   "functions": {
-    "index.php": {
-      "runtime": "vercel-php@0.6.0"
-    },
-    "php/*.php": {
-      "runtime": "vercel-php@0.6.0"
-    }
+    "index.php": { "runtime": "vercel-php@0.6.0" },
+    "php/*.php": { "runtime": "vercel-php@0.6.0" }
   },
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.php"
-    }
+    { "src": "/(.*)", "dest": "/index.php" }
   ]
 }
