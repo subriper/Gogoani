@@ -1,4 +1,4 @@
-<?php require_once('./php/info.php'); ?>
+<?php require_once('php/info.php'); ?>
 <!DOCTYPE html>
 <head>
     <meta charset="UTF-8" />
@@ -45,7 +45,7 @@
     </script>
     <script type="text/javascript" src="https://cdn.gogocdn.net/files/gogo/js/main.js"></script>
 
-    <?php require_once('./php/advertisments/popup.html'); ?>
+<?php require_once('php/advertisments/popup.html'); ?>
     
 </head>
 
@@ -173,7 +173,7 @@
     <script type="text/javascript" src="<?=$base_url?>/js/files/combo.js"></script>
     <script type="text/javascript" src="<?=$base_url?>/js/files/video.js"></script>
     <script type="text/javascript" src="<?=$base_url?>/js/files/jquery.tinyscrollbar.min.js"></script>
-    <?php include('./php/include/footer.php')?>  
+    <?php include('php/include/footer.php')?>  
     <script>
       if(document.getElementById('scrollbar2')){
         $('#scrollbar2').tinyscrollbar();
