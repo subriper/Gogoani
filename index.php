@@ -39,7 +39,7 @@
 
     <script type="text/javascript" src="<?=$base_url?>/js/libraries/jquery.js"></script>
     <script>
-        var base_url = 'http://' + document.domain + '/';
+        var base_url = 'https://' + document.domain + '/';
         var base_url_cdn_api = 'https://ajax.gogocdn.net/';
         var api_anclytic = 'https://ajax.gogocdn.net/anclytic-ajax.html';
     </script>
