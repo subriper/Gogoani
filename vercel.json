@@ -6,10 +6,6 @@
       "use": "@vercel/php"
     },
     {
-      "src": "api/index.php",
-      "use": "@vercel/php"
-    },
-    {
       "src": "php/*.php",
       "use": "@vercel/php"
     }
