@@ -1,11 +1,25 @@
 <?php 
-// استفاده از مسیر ریشه برای جلوگیری از ارور فایل‌های جانبی
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', __DIR__); 
 }
 require_once(ROOT_PATH . '/php/info.php');
 
+// تمیز کردن اسلش اضافه از انتهای آدرس ای‌پی‌آی
+$apiLink = rtrim($apiLink, '/');
+
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
+
+// تابع کمکی برای دریافت اطلاعات با cURL (امن‌تر در ورسل)
+function get_api_data($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return $response;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,35 +27,13 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="shortcut icon" href="<?=$base_url?>/img/favicon.ico">
-
-    <title>List All Anime at Gogoanime | Anime List</title>
-
-    <meta name="robots" content="index, follow" />
-    <meta name="description" content="List All Anime at Gogoanime | Anime List">
-    <meta name="keywords" content="List All Anime at Gogoanime | Anime List">
-    <meta itemprop="image" content="<?=$base_url?>/img/logo.png" />
-
-    <meta property="og:site_name" content="Gogoanime" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="List All Anime at Gogoanime | Anime List" />
-    <meta property="og:description" content="List All Anime at Gogoanime | Anime List">
-    <meta property="og:image" content="<?=$base_url?>/img/logo.png" />
-
-    <link rel="canonical" href="<?=$base_url?><?php echo $_SERVER['REQUEST_URI'] ?>" />
+    <title>List All Anime - <?=$website_name?></title>
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
     <script type="text/javascript" src="<?=$base_url?>/js/libraries/jquery.js"></script>
-    
-    <?php 
-    // اصلاح مسیر تبلیغات
-    if(file_exists(ROOT_PATH . '/php/advertisments/popup.html')) {
-        require_once(ROOT_PATH . '/php/advertisments/popup.html'); 
-    }
-    ?>
-
+    <?php if(file_exists(ROOT_PATH . '/php/advertisments/popup.html')) { require_once(ROOT_PATH . '/php/advertisments/popup.html'); } ?>
     <script>
         var base_url = 'https://' + document.domain + '/';
         var base_url_cdn_api = 'https://ajax.gogocdn.net/';
-        var api_anclytic = 'https://ajax.gogocdn.net/anclytic-ajax.html';
     </script>
     <script type="text/javascript" src="https://cdn.gogocdn.net/files/gogo/js/main.js?v=7.1"></script>
 </head>
@@ -50,12 +42,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
     <div id="wrapper_inside">
         <div id="wrapper">
             <div id="wrapper_bg">
-                <?php 
-                // اصلاح مسیر هدر
-                if(file_exists(ROOT_PATH . '/php/include/header.php')) {
-                    require_once(ROOT_PATH . '/php/include/header.php'); 
-                }
-                ?>
+                <?php if(file_exists(ROOT_PATH . '/php/include/header.php')) { require_once(ROOT_PATH . '/php/include/header.php'); } ?>
                 
                 <section class="content">
                     <section class="content_left">
@@ -67,11 +54,12 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
                                     <div class="pagination">
                                         <ul class='pagination-list'>
                                         <?php 
-                                            // فراخوانی ای‌پی‌آی با کنترل خطا
-                                            $pagination_data = @file_get_contents("$apiLink/anime-list-page?page=$page");
-                                            if ($pagination_data) {
-                                                $pagination = json_decode($pagination_data, true); 
-                                                echo str_replace("active","selected",$pagination['pagination']);
+                                            $pag_response = get_api_data("$apiLink/anime-list-page?page=$page");
+                                            if ($pag_response) {
+                                                $pagination = json_decode($pag_response, true); 
+                                                if(isset($pagination['pagination'])) {
+                                                    echo str_replace("active","selected",$pagination['pagination']);
+                                                }
                                             }
                                         ?>
                                         </ul>
@@ -79,7 +67,6 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
                                 </div>
                             </div>
 
-                            <!-- الفبای انیمه -->
                             <div class="list_search">
                                 <ul>
                                     <li class="first-char"><a href="/anime-list" class="active">All</a></li>
@@ -92,18 +79,22 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
                             <div class="anime_list_body">
                                 <ul class="listing">
                                 <?php
-                                    $json_data = @file_get_contents("$apiLink/animeList?page=$page");
-                                    if ($json_data) {
-                                        $json = json_decode($json_data, true);
-                                        foreach($json as $animeList)  { 
-                                ?>
-                                    <li title='<?php echo htmlspecialchars($animeList['liTitle']);?>'> 
-                                        <a href="/category/<?=$animeList['animeId']?>"><?=$animeList['animeTitle']?></a>
-                                    </li>
-                                <?php 
-                                        } 
+                                    $list_response = get_api_data("$apiLink/animeList?page=$page");
+                                    if ($list_response) {
+                                        $json = json_decode($list_response, true);
+                                        if ($json && is_array($json)) {
+                                            foreach($json as $animeList) { 
+                                                ?>
+                                                <li title='<?php echo htmlspecialchars($animeList['liTitle'] ?? '');?>'> 
+                                                    <a href="/category/<?=$animeList['animeId']?>"><?=$animeList['animeTitle']?></a>
+                                                </li>
+                                                <?php 
+                                            }
+                                        } else {
+                                            echo "<p style='color:white;'>No anime found on this page.</p>";
+                                        }
                                     } else {
-                                        echo "<p style='color:white;'>Error loading anime list from API.</p>";
+                                        echo "<p style='color:white;'>Error: Could not connect to API. (Checked: $apiLink)</p>";
                                     }
                                 ?>
                                 </ul>
@@ -124,23 +115,14 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
                                         <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
                                         <div class="viewport">
                                             <div class="overview">
-                                                <?php 
-                                                // اصلاح مسیر فایل Release
-                                                if(file_exists(ROOT_PATH . '/php/include/recentRelease.php')) {
-                                                    require_once(ROOT_PATH . '/php/include/recentRelease.php'); 
-                                                }
-                                                ?>
+                                                <?php if(file_exists(ROOT_PATH . '/php/include/recentRelease.php')) { require_once(ROOT_PATH . '/php/include/recentRelease.php'); } ?>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <?php 
-                        if(file_exists(ROOT_PATH . '/php/include/sub-category.html')) {
-                            require_once(ROOT_PATH . '/php/include/sub-category.html'); 
-                        }
-                        ?>
+                        <?php if(file_exists(ROOT_PATH . '/php/include/sub-category.html')) { require_once(ROOT_PATH . '/php/include/sub-category.html'); } ?>
                     </section>
                 </section>
                 
@@ -157,13 +139,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
 
     <script type="text/javascript" src="<?=$base_url?>/js/files/combo.js"></script>
     <script type="text/javascript" src="<?=$base_url?>/js/files/jquery.tinyscrollbar.min.js"></script>
-    
-    <?php 
-    if(file_exists(ROOT_PATH . '/php/include/footer.php')) {
-        include(ROOT_PATH . '/php/include/footer.php'); 
-    }
-    ?>
-
+    <?php if(file_exists(ROOT_PATH . '/php/include/footer.php')) { include(ROOT_PATH . '/php/include/footer.php'); } ?>
     <script type="text/javascript" src="<?=$base_url?>/js/files/jqueryTooltip.js"></script>
     <script>
         $(".listing li[title]").tooltip({ offset: [10, 200], effect: 'slide', predelay: 300 });
