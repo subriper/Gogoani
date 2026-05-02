@@ -1,8 +1,16 @@
 <?php 
 require_once('php/info.php'); 
-// تمیز کردن مسیر برای تشخیص درست صفحات
-$path = rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-if ($path == '') { $path = '/'; }
+
+// تمیز کردن آدرس برای تشخیص درست صفحات
+$request = $_SERVER['REQUEST_URI'];
+$path = trim(parse_url($request, PHP_URL_PATH), '/');
+
+// اگر آدرس خالی بود یا کلمه home بود، یعنی صفحه اصلی هستیم
+if ($path == "" || $path == "home" || $path == "index.php") {
+    $current_page = "home";
+} else {
+    $current_page = $path;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -10,30 +18,19 @@ if ($path == '') { $path = '/'; }
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="shortcut icon" href="<?=$base_url?>/img/favicon.ico">
-    <title>Watch anime online, English anime online - <?=$website_name?></title>
+    <title>Watch anime online - <?=$website_name?></title>
 
-    <meta name="description" content="Watch anime online in English. You can watch free series and movies online and English subtitle.">
-    <meta name="keywords" content="gogoanime,watch anime, anime online, free anime, english anime, sites to watch anime">
-    <meta itemprop="image" content="<?=$base_url?>/img/logo.png" />
-
-    <meta property="og:site_name" content="<?=$website_name?>" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="<?=$website_name?> | Watch anime online" />
-    <meta property="og:url" content="<?=$base_url?>" />
-    <meta property="og:image" content="<?=$base_url?>/img/logo.png" />
-
-    <link rel="canonical" href="<?=$base_url?>" />
+    <meta name="description" content="Watch anime online in English. Free series and movies online.">
+    <meta name="keywords" content="gogoanime, watch anime, anime online">
     <link rel="stylesheet" type="text/css" href="/css/style.css" />
 
     <script type="text/javascript" src="<?=$base_url?>/js/libraries/jquery.js"></script>
     <script>
         var base_url = 'https://' + document.domain + '/';
-        var base_url_cdn_api = 'https://ajax.gogocdn.net/';
     </script>
     <script type="text/javascript" src="https://cdn.gogocdn.net/files/gogo/js/main.js"></script>
 
     <?php 
-    // بررسی وجود فایل تبلیغات قبل از فراخوانی
     if(file_exists('php/advertisments/popup.html')) {
         require_once('php/advertisments/popup.html');
     }
@@ -47,15 +44,14 @@ if ($path == '') { $path = '/'; }
                 <header>
                     <div class="menu_top_link">
                         <div class="link_face intro">
-                            <a class="btn twitter" href="#" target="_blank"></a>
-                            <a class="btn facebook" href="#" target="_blank"></a>
-                            <a class="btn discord" href="#" target="_blank"></a>
-                            <a class="btn telegram" href="#" target="_blank"></a>
+                            <a class="btn twitter" href="#"></a>
+                            <a class="btn facebook" href="#"></a>
+                            <a class="btn discord" href="#"></a>
+                            <a class="btn telegram" href="#"></a>
                         </div>
                         <div class="submenu_intro">
                             <a href="#">Request</a><span>|</span>
-                            <a href="/contact-us">Contact us</a><span>|</span>
-                            <a href="#">Gogotaku</a>
+                            <a href="/contact-us">Contact us</a>
                         </div>          
                     </div>
                     <div class="clr"></div>
@@ -86,29 +82,27 @@ if ($path == '') { $path = '/'; }
 
                 <div class="main_body">
                     <?php
-                    // منطق مدیریت صفحات
-                    if ($path == '/' || $path == '/home' || $path == '/index.php') {
+                    // اگر صفحه اصلی بود، این متن‌ها رو نشون بده
+                    if ($current_page == "home") {
                         ?>
                         <div style="color:#FFF;padding:18px;">
                             <h1 style="text-transform:uppercase;font-size:20px;"><?=$website_name?> - Best site to watch anime online for FREE.</h1>
                             <p>Welcome! We created <?=$website_name?> to provide a better experience for anime fans world-wide.</p>
                             <p><?=$website_name?> is a completely free streaming site to watch or download anime in HD quality.</p>
-                            <h6 style="font-size:18px;">Why choose us?</h6>
-                            <p>Fast loading, huge content library, and daily updates are our core features.</p>
                         </div>
                         <?php
                     } 
+                    // در غیر این صورت، فایل مربوطه رو از صفحه اصلی لود کن
                     else {
-                        // تلاش برای لود کردن خودکار فایل از پوشه php بر اساس آدرس
-                        $clean_path = ltrim($path, '/');
-                        $target_file = __DIR__ . "/php/" . $clean_path . ".php";
+                        $target_file = __DIR__ . "/" . $current_page . ".php";
 
                         if (file_exists($target_file)) {
                             include($target_file);
                         } else {
                             echo '<div style="color:#FFF;padding:18px;text-align:center;">
-                                    <h1>404</h1>
-                                    <p>Page ('.$clean_path.') not found in php folder.</p>
+                                    <h1>404 - Not Found</h1>
+                                    <p>فایل مربوط به صفحه <b>' . $current_page . '.php</b> در پوشه اصلی پیدا نشد.</p>
+                                    <p>مطمئن شو اسم فایل در گیت‌هاب با حروف کوچک باشد.</p>
                                   </div>';
                         }
                     }
